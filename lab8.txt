@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Dropout, Rescaling
+from keras.utils import to_categorical
+from keras.datasets import mnist
+
+# Load dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# Plot 25 random samples
+indexes = np.random.randint(0, x_train.shape[0], size=25)
+images, labels = x_train[indexes], y_train[indexes]
+plt.figure(figsize=(5, 5))
+for i, image in enumerate(images):
+    plt.subplot(5, 5, i + 1)
+    plt.imshow(image, cmap='gray')
+    plt.axis('off')
+plt.show()
+
+# Preprocess labels only
+num_labels = len(np.unique(y_train))
+y_train, y_test = to_categorical(y_train), to_categorical(y_test)
+
+# Define model
+model = Sequential([
+    Rescaling(1./255, input_shape=(28, 28)),  # Normalize pixel values
+    Flatten(),
+    Dense(256, activation='relu'),
+    Dropout(0.45),
+    Dense(256, activation='relu'),
+    Dropout(0.45),
+    Dense(num_labels, activation='softmax')
+])
+
+# Compile and train model
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=20, batch_size=128)
+
+# Evaluate model
+loss, acc = model.evaluate(x_test, y_test, batch_size=128)
+print("\nTest accuracy: %.1f%%" % (100.0 * acc))

@@ -1,0 +1,54 @@
+import numpy as np
+
+# Data and normalization
+X = np.array([[2, 9], [1, 5], [3, 6]], dtype=float)
+y = np.array([[92], [86], [89]], dtype=float)
+X /= np.amax(X, axis=0)
+y /= 100
+
+# Activation functions
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Parameters
+epochs = 5
+lr = 0.1
+input_neurons = 2
+hidden_neurons = 3
+output_neurons = 1
+
+# Initialize weights and biases
+W1 = np.random.uniform(size=(input_neurons, hidden_neurons))
+B1 = np.random.uniform(size=(1, hidden_neurons))
+W2 = np.random.uniform(size=(hidden_neurons, output_neurons))
+B2 = np.random.uniform(size=(1, output_neurons))
+
+# Training loop
+for _ in range(epochs):
+    # Forward pass
+    hidden_input = np.dot(X, W1) + B1
+    hidden_output = sigmoid(hidden_input)
+    final_input = np.dot(hidden_output, W2) + B2
+    output = sigmoid(final_input)
+    
+    # Backward pass
+    error = y - output
+    d_output = error * sigmoid_derivative(output)
+    error_hidden = d_output.dot(W2.T)
+    d_hidden = error_hidden * sigmoid_derivative(hidden_output)
+    
+    # Update weights and biases
+    W2 += hidden_output.T.dot(d_output) * lr
+    B2 += np.sum(d_output, axis=0, keepdims=True) * lr
+    W1 += X.T.dot(d_hidden) * lr
+    B1 += np.sum(d_hidden, axis=0, keepdims=True) * lr
+    
+    # Print progress
+    print(f"Epoch {_ + 1}")
+    print(f"Predicted Output: \n{output}\n")
+
+# Final output
+print("Final Predicted Output: \n", output)
